@@ -27,16 +27,22 @@ export const authOptions: AuthOptions = {
         name: { label: "Name", type: "text", placeholder: "John Smith" },
       },
       async authorize(credentials) {
-        const { password, email } = loginUserSchema.parse(credentials)
-        const user = await prisma.user.findUnique({
-          where: { email },
-        })
-        if (!user) return null
+        try {
+          const { password, email } = loginUserSchema.parse(credentials)
+          const user = await prisma.user.findUnique({
+            where: { email },
+          })
+          if (!user) throw new Error("Couldnt find user with this email")
 
-        const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid) return null
-
-        return user
+          const isPasswordValid = await bcrypt.compare(password, user.password)
+          if (!isPasswordValid)
+            throw new Error(
+              "The details you enter are inccorect, please try again"
+            )
+          return user
+        } catch (err) {
+          throw new Error(err as string)
+        }
       },
     }),
   ],
