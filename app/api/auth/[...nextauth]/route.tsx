@@ -5,17 +5,8 @@ import { AuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
-import { z } from "zod"
 
-const loginUserSchema = z.object({
-  email: z
-    .string()
-    .regex(
-      /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
-      "Invalid email"
-    ),
-  password: z.string().min(5, "Password should be minimum 5 charachters"),
-})
+import { loginUserSchema } from "@/lib/schemas"
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),

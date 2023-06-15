@@ -1,14 +1,19 @@
 "use client"
 
-import { FormEvent, HTMLAttributes, SyntheticEvent, useState } from "react"
+import { HTMLAttributes, useState } from "react"
 import { userService } from "@/services/user.service"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
+import { useForm } from "react-hook-form"
 
+import { registerUserSchema, registerUserSchemaType } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/icons"
+
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
   page: "login" | "register"
@@ -16,17 +21,24 @@ interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
 
 export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string>("")
+  const [serverError, setServerError] = useState<string>("")
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<registerUserSchemaType>({
+    resolver: zodResolver(registerUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  })
+  if (errors) console.log("errors:", errors)
+
+  async function onSubmit(credentials: registerUserSchemaType) {
     setIsLoading(true)
-    const form = new FormData(e.target as HTMLFormElement)
-    const credentials = {
-      email: form.get("email") as string,
-      name: form.get("name") as string,
-      password: form.get("password") as string,
-    }
     try {
       if (page === "login") {
         const res = await signIn("credentials", {
@@ -36,14 +48,17 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
           redirect: false,
         })
         if (res?.error) {
-          setError(res.error)
+          setServerError(res.error)
         }
         console.log("res:", res)
         return
       }
       const data = await userService.registerUser(credentials)
-      if (data.error) setError(data.error)
-      if (!data.user) return null
+      if (data.error) {
+        setServerError(data.error)
+        return
+      }
+      // if (!data.user) return null
       signIn("credentials", {
         email: data.user.email,
         password: credentials.password,
@@ -58,15 +73,22 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit((credentials) => onSubmit(credentials))}>
         <div className="grid gap-2">
+          {serverError ? (
+            <Alert variant={"destructive"}>
+              <Icons.warning className="h-4 w-4" />
+              <AlertTitle>Something went wrong</AlertTitle>
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
+          ) : null}
           <div className="grid gap-2">
             <Label className="text-muted-foreground" htmlFor="email">
               Email
             </Label>
             <Input
+              {...register("email")}
               id="email"
-              name="email"
               placeholder="jsmith@example.com"
               type="email"
               autoCapitalize="none"
@@ -75,6 +97,9 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
               disabled={isLoading}
               required
             />
+            {errors?.email?.message && (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
+            )}
             {page === "register" ? (
               <div className="grid gap-2">
                 <Label className="text-muted-foreground" htmlFor="name">
@@ -82,7 +107,7 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                 </Label>
                 <Input
                   id="name"
-                  name="name"
+                  {...register("name")}
                   placeholder="John Smith"
                   type="text"
                   autoCapitalize="none"
@@ -91,6 +116,11 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                   disabled={isLoading}
                   required
                 />
+                {errors?.name?.message && (
+                  <p className="text-xs text-destructive">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
             ) : null}
             <div className="grid gap-2">
@@ -98,9 +128,9 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                 Password
               </Label>
               <Input
+                {...register("password")}
                 id="password"
                 placeholder="•••••"
-                name="password"
                 type="password"
                 autoCapitalize="none"
                 autoComplete="password"
@@ -108,6 +138,11 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                 disabled={isLoading}
                 required
               />
+              {errors?.password?.message && (
+                <p className="text-xs text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </div>
           <Button disabled={isLoading}>
