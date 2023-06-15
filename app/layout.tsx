@@ -6,7 +6,8 @@ import { fontSans } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
-import { ThemeProvider } from "@/components/theme-provider"
+
+import Providers from "./providers/providers"
 
 export const metadata: Metadata = {
   title: {
@@ -40,13 +41,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.variable
           )}
         >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Providers>
             <div className="relative flex min-h-screen flex-col">
               <SiteHeader />
-              <div className="flex-1">{children}</div>
+              <div className="flex flex-1 flex-col">{children}</div>
             </div>
             <TailwindIndicator />
-          </ThemeProvider>
+          </Providers>
         </body>
       </html>
     </>
