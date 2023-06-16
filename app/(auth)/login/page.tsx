@@ -1,5 +1,6 @@
 import type { FC } from "react"
 import Link from "next/link"
+import { UserPlus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -11,13 +12,14 @@ const LoginPage: FC<LoginPageProps> = () => {
   return (
     <>
       <Link
-        href="/auth/register"
+        href="/register"
         className={cn(
           buttonVariants({ variant: "ghost", size: "sm" }),
-          "absolute right-4 top-4 md:right-8 md:top-8"
+          "absolute right-4 top-4 space-x-2 md:right-8 md:top-8"
         )}
       >
-        Dont have an account yet ?
+        <UserPlus className="w-4 h-4" />
+        <span>Dont have an account yet ?</span>
       </Link>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">

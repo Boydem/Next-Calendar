@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
@@ -22,6 +24,7 @@ interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
 export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [serverError, setServerError] = useState<string>("")
+  const { toast } = useToast()
 
   const {
     register,
@@ -47,17 +50,28 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
           callbackUrl: "/",
           redirect: false,
         })
+
         if (res?.error) {
           setServerError(res.error)
-        }
+          toast({
+            variant: "destructive",
+            title: "Oops, Something went wrong",
+            description: res.error,
+          })
+        } else setServerError("")
         console.log("res:", res)
         return
       }
       const data = await userService.registerUser(credentials)
       if (data.error) {
         setServerError(data.error)
+        toast({
+          variant: "destructive",
+          title: "Oops, Something went wrong",
+          description: data.error,
+        })
         return
-      }
+      } else setServerError("")
       // if (!data.user) return null
       signIn("credentials", {
         email: data.user.email,
@@ -76,7 +90,7 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
       <form onSubmit={handleSubmit((credentials) => onSubmit(credentials))}>
         <div className="grid gap-2">
           {serverError ? (
-            <Alert variant={"destructive"}>
+            <Alert className="mb-3" variant={"destructive"}>
               <Icons.warning className="h-4 w-4" />
               <AlertTitle>Something went wrong</AlertTitle>
               <AlertDescription>{serverError}</AlertDescription>
@@ -145,7 +159,7 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
               )}
             </div>
           </div>
-          <Button disabled={isLoading}>
+          <Button disabled={isLoading} className="mt-3">
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}

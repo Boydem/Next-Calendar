@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-  pages: { signIn: "/auth/login", newUser: "/auth/register" },
+  pages: { signIn: "/login", newUser: "/register", error: "/login" },
   secret: process.env.JWT_SECRET,
   session: { strategy: "jwt" },
   debug: process.env.NODE_ENV === "development",

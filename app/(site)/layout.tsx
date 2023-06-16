@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 
-import Providers from "./providers/providers"
+import Providers from "../providers/providers"
 
 export const metadata: Metadata = {
   title: {
@@ -26,29 +26,15 @@ export const metadata: Metadata = {
   },
 }
 
-interface RootLayoutProps {
+interface SiteLayoutProps {
   children: React.ReactNode
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function SiteLayout({ children }: SiteLayoutProps) {
   return (
     <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
-          )}
-        >
-          <Providers>
-            <div className="relative flex min-h-screen flex-col">
-              <div className="flex flex-1 flex-col">{children}</div>
-            </div>
-            <TailwindIndicator />
-          </Providers>
-        </body>
-      </html>
+      <SiteHeader />
+      <div className="flex flex-1 flex-col">{children}</div>
     </>
   )
 }

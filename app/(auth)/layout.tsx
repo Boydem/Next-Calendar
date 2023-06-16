@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site"
 
 export const metadata: Metadata = {
   title: {
-    default: "Authentication Page",
+    default: "Authentication",
     template: `%s - 'Authentication Page'`,
   },
   description: siteConfig.description,
