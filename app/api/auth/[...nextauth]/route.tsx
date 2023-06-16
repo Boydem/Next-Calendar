@@ -32,13 +32,10 @@ export const authOptions: AuthOptions = {
           const user = await prisma.user.findUnique({
             where: { email },
           })
-          if (!user) throw new Error("Couldnt find user with this email")
+          if (!user) throw new Error("No user found")
 
           const isPasswordValid = await bcrypt.compare(password, user.password)
-          if (!isPasswordValid)
-            throw new Error(
-              "The details you enter are inccorect, please try again"
-            )
+          if (!isPasswordValid) throw new Error("Incorrect password")
           return user
         } catch (err) {
           throw new Error(err as string)

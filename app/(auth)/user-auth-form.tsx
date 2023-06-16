@@ -1,6 +1,6 @@
 "use client"
 
-import { HTMLAttributes, useState } from "react"
+import { HTMLAttributes } from "react"
 import { userService } from "@/services/user.service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
@@ -11,25 +11,23 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ToastAction } from "@/components/ui/toast"
 import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert"
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
   page: "login" | "register"
 }
 
 export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [serverError, setServerError] = useState<string>("")
   const { toast } = useToast()
-
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
   } = useForm<registerUserSchemaType>({
     resolver: zodResolver(registerUserSchema),
     defaultValues: {
@@ -41,7 +39,6 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
   if (errors) console.log("errors:", errors)
 
   async function onSubmit(credentials: registerUserSchemaType) {
-    setIsLoading(true)
     try {
       if (page === "login") {
         const res = await signIn("credentials", {
@@ -52,26 +49,26 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
         })
 
         if (res?.error) {
-          setServerError(res.error)
+          setError("root", { type: "serverError", message: res.error })
           toast({
             variant: "destructive",
             title: "Oops, Something went wrong",
             description: res.error,
           })
-        } else setServerError("")
+        } else clearErrors("root.serverError")
         console.log("res:", res)
         return
       }
       const data = await userService.registerUser(credentials)
       if (data.error) {
-        setServerError(data.error)
+        setError("root", { type: "serverError", message: data.error })
         toast({
           variant: "destructive",
           title: "Oops, Something went wrong",
           description: data.error,
         })
         return
-      } else setServerError("")
+      } else clearErrors("root.serverError")
       // if (!data.user) return null
       signIn("credentials", {
         email: data.user.email,
@@ -80,20 +77,17 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
       })
     } catch (err) {
       console.log("err:", err)
-    } finally {
-      setIsLoading(false)
     }
   }
-
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={handleSubmit((credentials) => onSubmit(credentials))}>
         <div className="grid gap-2">
-          {serverError ? (
+          {errors.root ? (
             <Alert className="mb-3" variant={"destructive"}>
               <Icons.warning className="h-4 w-4" />
               <AlertTitle>Something went wrong</AlertTitle>
-              <AlertDescription>{serverError}</AlertDescription>
+              <AlertDescription>{errors.root.message}</AlertDescription>
             </Alert>
           ) : null}
           <div className="grid gap-2">
@@ -101,15 +95,13 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
               Email
             </Label>
             <Input
-              {...register("email")}
+              {...register("email", { disabled: isSubmitting, required: true })}
               id="email"
               placeholder="jsmith@example.com"
-              type="email"
+              type="text"
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
-              disabled={isLoading}
-              required
             />
             {errors?.email?.message && (
               <p className="text-xs text-destructive">{errors.email.message}</p>
@@ -121,14 +113,15 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                 </Label>
                 <Input
                   id="name"
-                  {...register("name")}
+                  {...register("name", {
+                    disabled: isSubmitting,
+                    required: true,
+                  })}
                   placeholder="John Smith"
                   type="text"
                   autoCapitalize="none"
                   autoComplete="name"
                   autoCorrect="off"
-                  disabled={isLoading}
-                  required
                 />
                 {errors?.name?.message && (
                   <p className="text-xs text-destructive">
@@ -142,15 +135,16 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
                 Password
               </Label>
               <Input
-                {...register("password")}
+                {...register("password", {
+                  disabled: isSubmitting,
+                  required: true,
+                })}
                 id="password"
                 placeholder="•••••"
                 type="password"
                 autoCapitalize="none"
                 autoComplete="password"
                 autoCorrect="off"
-                disabled={isLoading}
-                required
               />
               {errors?.password?.message && (
                 <p className="text-xs text-destructive">
@@ -159,8 +153,8 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
               )}
             </div>
           </div>
-          <Button disabled={isLoading} className="mt-3">
-            {isLoading && (
+          <Button disabled={isSubmitting} className="mt-3">
+            {isSubmitting && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
             {page === "register" ? "Sign Up with Email" : "Sign In with Email"}
@@ -177,8 +171,8 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <Button variant="outline" type="button" disabled={isLoading}>
-        {isLoading ? (
+      <Button variant="outline" type="button" disabled={isSubmitting}>
+        {isSubmitting ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Icons.google className="mr-2 h-4 w-4" />

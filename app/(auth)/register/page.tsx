@@ -4,7 +4,7 @@ import { LogIn } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { UserAuthForm } from "@/components/user-auth-form"
+import { UserAuthForm } from "@/app/(auth)/user-auth-form"
 
 interface RegisterPageProps {}
 
