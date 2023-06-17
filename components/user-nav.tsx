@@ -1,7 +1,7 @@
 "use client"
 
 import {
-  CopyIcon,
+  Copy,
   CreditCard,
   LogInIcon,
   LogOut,
@@ -73,7 +73,7 @@ export function UserNav() {
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <CopyIcon className="mr-2 h-4 w-4" />
+            <Copy className="mr-2 h-4 w-4" />
             <span>Copy calendar link</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>

@@ -14,6 +14,26 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorization: {
+        params: {
+          scope:
+            "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar",
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+      profile: (profile) => {
+        const { email, email_verified, picture, name, sub } = profile
+        return {
+          id: sub,
+          email,
+          image: picture,
+          name,
+          emailVerified: email_verified,
+        }
+      },
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -29,12 +49,20 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           const { password, email } = loginUserSchema.parse(credentials)
+          // check to see if user exists
           const user = await prisma.user.findUnique({
             where: { email },
           })
-          if (!user) throw new Error("No user found")
-
-          const isPasswordValid = await bcrypt.compare(password, user.password)
+          // if no user was found
+          if (!user || !user?.hashedPassword) {
+            throw new Error("No user found")
+          }
+          // check to see if password matches
+          const isPasswordValid = await bcrypt.compare(
+            password,
+            user.hashedPassword
+          )
+          // if password does not match
           if (!isPasswordValid) throw new Error("Incorrect password")
           return user
         } catch (err) {

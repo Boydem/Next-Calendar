@@ -12,7 +12,6 @@ datasource db {
 
 model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  password       String
   name           String?
   email          String?   @unique
   emailVerified  DateTime?
@@ -22,6 +21,7 @@ model User {
   updatedAt      DateTime  @updatedAt
 
   accounts Account[]
+  sessions Session[]
 
   @@map("users")
 }
@@ -44,4 +44,23 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String   @id @default(auto()) @map("_id") @db.ObjectId
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification-tokens")
 }

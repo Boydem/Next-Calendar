@@ -41,22 +41,24 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
   async function onSubmit(credentials: registerUserSchemaType) {
     try {
       if (page === "login") {
-        const res = await signIn("credentials", {
+        signIn("credentials", {
           email: credentials.email,
           password: credentials.password,
           callbackUrl: "/",
           redirect: false,
+        }).then((callback) => {
+          if (callback?.error) {
+            setError("root", { type: "serverError", message: callback.error })
+            toast({
+              variant: "destructive",
+              title: "Oops, Something went wrong",
+              description: callback.error,
+            })
+          } else clearErrors("root.serverError")
+          if (callback?.ok && !callback.error) {
+            toast({ variant: "default", title: "Logged in successfully!" })
+          }
         })
-
-        if (res?.error) {
-          setError("root", { type: "serverError", message: res.error })
-          toast({
-            variant: "destructive",
-            title: "Oops, Something went wrong",
-            description: res.error,
-          })
-        } else clearErrors("root.serverError")
-        console.log("res:", res)
         return
       }
       const data = await userService.registerUser(credentials)
@@ -171,7 +173,12 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <Button variant="outline" type="button" disabled={isSubmitting}>
+      <Button
+        onClick={() => signIn("google")}
+        variant="outline"
+        type="button"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
