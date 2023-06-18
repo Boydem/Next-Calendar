@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+import { registerUserSchema } from "@/constants/schemas"
 import prisma from "@/prisma/prisma.client"
 import bcrypt from "bcryptjs"
-
-import { registerUserSchema } from "@/lib/schemas"
 
 export async function POST(req: NextRequest) {
   try {

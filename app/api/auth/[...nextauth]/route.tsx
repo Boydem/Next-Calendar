@@ -1,3 +1,4 @@
+import { loginUserSchema } from "@/constants/schemas"
 import prisma from "@/prisma/prisma.client"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import bcrypt from "bcryptjs"
@@ -5,8 +6,6 @@ import { AuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
-
-import { loginUserSchema } from "@/lib/schemas"
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -31,6 +30,7 @@ export const authOptions: AuthOptions = {
           image: picture,
           name,
           emailVerified: email_verified,
+          userUrl: "/" + email.split("@")[0],
         }
       },
       allowDangerousEmailAccountLinking: true,
@@ -72,7 +72,7 @@ export const authOptions: AuthOptions = {
     }),
   ],
   pages: { signIn: "/login", newUser: "/register", error: "/login" },
-  secret: process.env.JWT_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   debug: process.env.NODE_ENV === "development",
 }

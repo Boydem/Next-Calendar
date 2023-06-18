@@ -1,5 +1,6 @@
 import type { FC } from "react"
-import moment from "moment"
+
+import { CalendarDateRangePicker } from "@/components/date-range-picker"
 
 import { Appointment, columns } from "./columns"
 import { DataTable } from "./data-table"
@@ -44,14 +45,19 @@ const data: Appointment[] = [
   },
 ]
 
-const AppointmentPage: FC<AppointmentPageProps> = async () => {
+const AppointmentPage: FC<AppointmentPageProps> = () => {
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="mb-5 text-2xl font-semibold border-b-[1px] pb-2.5">
-        Appointments Table
-      </h1>
-      <DataTable columns={columns} data={data} />
-    </div>
+    <>
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Scheduled events</h2>
+        <div className="flex items-center space-x-2">
+          <CalendarDateRangePicker />
+        </div>
+      </div>
+      <div>
+        <DataTable columns={columns} data={data} />
+      </div>
+    </>
   )
 }
 

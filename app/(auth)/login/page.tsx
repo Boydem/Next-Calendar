@@ -4,7 +4,8 @@ import { UserPlus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { UserAuthForm } from "@/app/(auth)/user-auth-form"
+
+import { UserAuthForm } from "../user-auth-form"
 
 interface LoginPageProps {}
 
@@ -18,7 +19,7 @@ const LoginPage: FC<LoginPageProps> = () => {
           "absolute right-4 top-4 space-x-2 md:right-8 md:top-8"
         )}
       >
-        <UserPlus className="w-4 h-4" />
+        <UserPlus className="h-4 w-4" />
         <span>Dont have an account yet ?</span>
       </Link>
       <div className="flex flex-col space-y-2 text-center">

@@ -11,19 +11,51 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
   name           String?
-  email          String?   @unique
+  email          String?     @unique
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  accounts Account[]
-  sessions Session[]
+  userUrl        String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  eventTypes     EventType[]
+  accounts       Account[]
+  sessions       Session[]
+  events         Event[]
 
   @@map("users")
+}
+
+model EventType {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userUrl           String  @db.ObjectId
+  type              String?
+  name              String
+  durationInMinutes Int
+  description       String?
+
+  events Event[]
+  user   User    @relation(fields: [userUrl], references: [id], onDelete: Cascade)
+
+  @@map("event-types")
+}
+
+model Event {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  eventTypeId   String    @db.ObjectId
+  userId        String    @db.ObjectId
+  name          String?
+  email         String?
+  startDateTime DateTime?
+  endDateTime   DateTime?
+  status        String?
+
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+
+  @@map("events")
 }
 
 model Account {

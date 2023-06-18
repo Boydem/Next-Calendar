@@ -1,20 +1,19 @@
 "use client"
 
 import { HTMLAttributes } from "react"
+import { registerUserSchema, registerUserSchemaType } from "@/constants/schemas"
 import { userService } from "@/services/user.service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 
-import { registerUserSchema, registerUserSchemaType } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
-
-import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert"
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
   page: "login" | "register"
