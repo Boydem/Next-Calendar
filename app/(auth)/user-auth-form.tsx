@@ -1,10 +1,11 @@
 "use client"
 
-import { HTMLAttributes } from "react"
+import { HTMLAttributes, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { registerUserSchema, registerUserSchemaType } from "@/constants/schemas"
 import { userService } from "@/services/user.service"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
@@ -20,6 +21,8 @@ interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
+  const router = useRouter()
+  const session = useSession()
   const { toast } = useToast()
   const {
     register,
@@ -36,6 +39,12 @@ export function UserAuthForm({ className, page, ...props }: UserAuthFormProps) {
     },
   })
   if (errors) console.log("errors:", errors)
+
+  // useEffect(() => {
+  //   if (session?.status === "authenticated") {
+  //     router.push("/dashboard")
+  //   }
+  // }, [session?.status, router])
 
   async function onSubmit(credentials: registerUserSchemaType) {
     try {

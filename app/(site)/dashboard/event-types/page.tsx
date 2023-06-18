@@ -1,13 +1,8 @@
 import { FC } from "react"
-import {
-  Activity,
-  Command,
-  CreditCard,
-  DollarSign,
-  Plus,
-  Users,
-} from "lucide-react"
+import Link from "next/link"
+import { Copy, Share2 } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -16,8 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { CalendarDateRangePicker } from "@/components/date-range-picker"
-import { Overview } from "@/components/overview"
-import { RecentEvents } from "@/components/recent-events"
 
 interface AppointmentPageProps {}
 
@@ -32,75 +25,60 @@ const AppointmentPage: FC<AppointmentPageProps> = () => {
       </div>
       <div className="space-y-5">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
+          <Card className="border-t-4 border-t-purple-600 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader className="flex flex-col items-start justify-between space-y-1">
+              <CardTitle className="text-xl font-bold">
+                Coding lesson with Noam Dahan
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardDescription>60 mins, One-on-One</CardDescription>
+              <Link href={"/"} className="text-sm text-primary">
+                View booking page
+              </Link>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$45,231.89</div>
-              <p className="text-xs text-muted-foreground">
-                +20.1% from last month
-              </p>
+            <CardContent className="flex flex-row items-center justify-between space-y-1 border-t py-3">
+              <Link
+                href={"/"}
+                className="flex items-center space-x-1 text-xs text-primary"
+              >
+                <Copy className="h-3 w-3" />
+                <span>Copy link</span>
+              </Link>
+              <Button
+                size={"sm"}
+                variant={"outline"}
+                className="flex items-center space-x-1 rounded-full  text-primary"
+              >
+                <Share2 className="h-3 w-3" />
+                <span>Share</span>
+              </Button>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Subscriptions
+          <Card className="border-t-4 border-t-cyan-600 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader className="flex flex-col items-start justify-between space-y-1">
+              <CardTitle className="text-xl font-bold">
+                Coffe meeting with Noam Dahan
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardDescription>15 mins, One-on-One</CardDescription>
+              <Link href={"/"} className="text-sm text-primary">
+                View booking page
+              </Link>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">+2350</div>
-              <p className="text-xs text-muted-foreground">
-                +180.1% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sales</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">+12,234</div>
-              <p className="text-xs text-muted-foreground">
-                +19% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">+573</div>
-              <p className="text-xs text-muted-foreground">
-                +201 since last hour
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <Overview />
-            </CardContent>
-          </Card>
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <CardDescription>You made 265 sales this month.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RecentEvents />
+            <CardContent className="flex flex-row items-center justify-between space-y-1 border-t py-3">
+              <Link
+                href={"/"}
+                className="flex items-center space-x-1 text-xs text-primary"
+              >
+                <Copy className="h-3 w-3" />
+                <span>Copy link</span>
+              </Link>
+              <Button
+                size={"sm"}
+                variant={"outline"}
+                className="flex items-center space-x-1 rounded-full text-primary"
+              >
+                <Share2 className="h-3 w-3" />
+                <span>Share</span>
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -64,6 +64,7 @@ export const authOptions: AuthOptions = {
           )
           // if password does not match
           if (!isPasswordValid) throw new Error("Incorrect password")
+          if (!user.userUrl) user.userUrl = "/" + email.split("@")[0]
           return user
         } catch (err) {
           throw new Error(err as string)
@@ -71,6 +72,19 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (!user) return token
+      return { ...token, userUrl: user.userUrl }
+    },
+    session: async ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.sub
+        session.user.userUrl = token.userUrl
+      }
+      return session
+    },
+  },
   pages: { signIn: "/login", newUser: "/register", error: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },

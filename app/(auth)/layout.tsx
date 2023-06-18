@@ -1,7 +1,11 @@
 import { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { Command } from "lucide-react"
+import { getServerSession } from "next-auth"
 
 import { siteConfig } from "@/config/site"
+
+import { authOptions } from "../api/auth/[...nextauth]/route"
 
 export const metadata: Metadata = {
   title: {
@@ -15,9 +19,11 @@ interface AuthenticationLayoutProps {
   children: React.ReactNode
 }
 
-export default function AuthenticationLayout({
+export default async function AuthenticationLayout({
   children,
 }: AuthenticationLayoutProps) {
+  const session = await getServerSession(authOptions)
+  if (session?.user) redirect("/dashboard")
   return (
     <div className="container relative grid flex-1 flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">

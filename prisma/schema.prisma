@@ -35,6 +35,7 @@ model EventType {
   name              String
   durationInMinutes Int
   description       String?
+  url               String
 
   events Event[]
   user   User    @relation(fields: [userUrl], references: [id], onDelete: Cascade)
