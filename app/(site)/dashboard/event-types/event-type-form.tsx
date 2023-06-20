@@ -1,7 +1,12 @@
 "use client"
 
-import type { FC } from "react"
-import eventColorsObj, { EventColors } from "@/constants/eventColors"
+import { useEffect, type FC } from "react"
+import eventColorsMap, { EventColors } from "@/constants/eventColors"
+import {
+  EventTypeFormSchemaType,
+  eventTypeFormSchema,
+} from "@/constants/zodSchemas"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { AccordionContent } from "@radix-ui/react-accordion"
 import { useForm } from "react-hook-form"
 
@@ -12,34 +17,35 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 
-export type EventTypeFormValues = {
-  name: string
-  location: string
-  description: string
-  slug: string
-  color: keyof EventColors
-}
-
 interface EventTypeFormProps {
-  onSubmit: (formData: EventTypeFormValues) => void
-  initialData: EventTypeFormValues
+  onSubmit: (formData: EventTypeFormSchemaType) => void
+  initialData: EventTypeFormSchemaType
   isTabOpen: boolean
+  setIsFirstStepValid: (val: boolean) => void
 }
 
 const EventTypeForm: FC<EventTypeFormProps> = ({
   onSubmit,
   initialData,
   isTabOpen,
+  setIsFirstStepValid,
 }) => {
   const {
     register,
     handleSubmit,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors, isValid, defaultValues },
     setValue,
-  } = useForm<EventTypeFormValues>({
+  } = useForm<EventTypeFormSchemaType>({
+    resolver: zodResolver(eventTypeFormSchema),
     defaultValues: initialData,
+    mode: "all",
+    resetOptions: { keepValues: true, keepDefaultValues: true },
   })
+
+  useEffect(() => {
+    setIsFirstStepValid(isValid)
+  }, [setIsFirstStepValid, isValid])
 
   return (
     <>
@@ -51,7 +57,7 @@ const EventTypeForm: FC<EventTypeFormProps> = ({
         <div className="flex flex-1 items-center space-x-2 text-start">
           <div
             className={`h-5 w-5 rounded-full bg-${
-              eventColorsObj[`${watch("color")}`].className
+              eventColorsMap[`${watch("color")}`].className
             }`}
           ></div>
           <div className="flex flex-col">
@@ -71,15 +77,24 @@ const EventTypeForm: FC<EventTypeFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="eventName">Event name *</Label>
             <Input
-              {...register("name", { required: true, disabled: isSubmitting })}
+              {...register("name", {
+                required: true,
+                disabled: isSubmitting,
+                value: initialData.name,
+              })}
               type="text"
               id="eventName"
             />
+            {errors?.name ? (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="eventLocation">Location</Label>
             <Input
-              {...register("location", { disabled: isSubmitting })}
+              {...register("location", {
+                disabled: isSubmitting,
+              })}
               type="text"
               id="eventLocation"
               placeholder="Add a location"
@@ -88,7 +103,7 @@ const EventTypeForm: FC<EventTypeFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="eventDescription">Description/Instructions</Label>
             <Textarea
-              {...register("description")}
+              {...register("description", { value: initialData.description })}
               id="eventDescription"
               placeholder="Write a summary and any details your invitee should know about the event."
             />
@@ -99,11 +114,18 @@ const EventTypeForm: FC<EventTypeFormProps> = ({
               next-calendar.com/noamdahandev/{watch("slug")}
             </p>
             <Input
-              {...register("slug", { required: true, disabled: isSubmitting })}
+              {...register("slug", {
+                required: true,
+                disabled: isSubmitting,
+                value: initialData.slug,
+              })}
               type="text"
               id="eventLink"
-              placeholder="Add a location"
+              placeholder="Your event type link"
             />
+            {errors?.slug ? (
+              <p className="text-xs text-destructive">{errors.slug.message}</p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label>Event color *</Label>
@@ -112,7 +134,7 @@ const EventTypeForm: FC<EventTypeFormProps> = ({
               defaultValue={watch("color")}
               className="flex"
             >
-              {Object.entries(eventColorsObj).map(([colorName, color]) => (
+              {Object.entries(eventColorsMap).map(([colorName, color]) => (
                 <div
                   key={color.id}
                   className="align-center group relative mb-4 flex justify-center"

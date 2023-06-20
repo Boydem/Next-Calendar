@@ -1,11 +1,25 @@
 "use client"
 
 import { useState, type FC } from "react"
-import { Calendar } from "lucide-react"
+import {
+  AvailabilityFormSchemaType,
+  availabilityFormSchema,
+} from "@/constants/zodSchemas"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Calendar, Trash } from "lucide-react"
 import { useForm } from "react-hook-form"
 
 import { AccordionContent, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,32 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export type WeekDay =
-  | "sunday"
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-
-export type AvailabilityFormValues = {
-  durationInMinutes: number
-  bookingRangeInDays: number
-  // excludeWeekends: boolean
-  availabilitySchedule: {
-    timezone?: string
-    rules: Array<{
-      intervals: { from: string; to: string }
-      day: WeekDay
-      isActiveDay: boolean
-    }>
-  }
-}
-
 interface AvailabilityFormProps {
-  onSubmit: (formData: AvailabilityFormValues) => void
-  initialData: AvailabilityFormValues
+  onSubmit: (formData: AvailabilityFormSchemaType) => void
+  initialData: AvailabilityFormSchemaType
   isTabOpen: boolean
 }
 
@@ -50,16 +41,21 @@ const AvailabilityForm: FC<AvailabilityFormProps> = ({
   initialData,
   isTabOpen,
 }) => {
+  const [isCustomSchedule, setIsCustomSchedule] = useState(true)
   const [isCustomDuration, setIsCustomDuration] = useState(false)
   const {
     register,
     handleSubmit,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     setValue,
-  } = useForm<AvailabilityFormValues>({
+  } = useForm<AvailabilityFormSchemaType>({
+    resolver: zodResolver(availabilityFormSchema),
     defaultValues: initialData,
+    mode: "all",
   })
+
+  if (errors) console.log("errors:", errors)
   return (
     <>
       <AccordionTrigger
@@ -83,24 +79,34 @@ const AvailabilityForm: FC<AvailabilityFormProps> = ({
           onSubmit={handleSubmit((formData) => onSubmit(formData))}
           className="flex max-w-fit flex-col space-y-4"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 border-b pb-4">
             <Label htmlFor="dateRange">Date range *</Label>
-            <p className="text-xs">Invitees can schedule...</p>
-            <div className="inline-flex items-center space-x-2">
+            <p className="text-xs text-muted-foreground">
+              Invitees can schedule...
+            </p>
+            <div className="inline-flex flex-wrap items-center space-x-2">
               <Input
                 {...register("bookingRangeInDays", {
                   required: true,
                   disabled: isSubmitting,
+                  valueAsNumber: true,
                 })}
                 type="number"
                 id="dateRange"
-                className="w-[100px]"
+                className={`w-[100px] ${
+                  errors?.bookingRangeInDays ? "border-destructive" : ""
+                }`}
               />
               <p>Days into the future</p>
+              {errors?.bookingRangeInDays ? (
+                <p className="mt-2 basis-full text-xs text-destructive">
+                  {errors.bookingRangeInDays.message}
+                </p>
+              ) : null}
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="eventDuration">Duration</Label>
+          <div className="space-y-2 border-b pb-4">
+            <Label htmlFor="eventDuration">Event duration *</Label>
             <Select
               onValueChange={(val: string) => {
                 if (val === "Custom") {
@@ -119,25 +125,168 @@ const AvailabilityForm: FC<AvailabilityFormProps> = ({
                 />
               </SelectTrigger>
               <SelectContent>
-                {[15, 30, 45, 60, "Custom"].map((duration) => (
-                  <SelectItem value={duration + ""}>
+                {[15, 30, 45, 60, "Custom"].map((duration, index) => (
+                  <SelectItem key={index + "dt"} value={duration + ""}>
                     {duration !== "Custom" ? duration + " min" : duration}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {isCustomDuration ? (
-              <div className="inline-flex items-center space-x-2">
+              <div className="inline-flex flex-wrap items-center space-x-2">
                 <Input
-                  {...register("durationInMinutes", { disabled: isSubmitting })}
+                  className={`w-[80px] ${
+                    errors?.durationInMinutes ? "border-destructive" : ""
+                  }`}
+                  {...register("durationInMinutes", {
+                    disabled: isSubmitting,
+                    valueAsNumber: true,
+                  })}
                   type="number"
                   id="eventDuration"
                   placeholder="Add a location"
-                  className="w-[80px]"
                 />
                 <p>Min</p>
+                {errors?.durationInMinutes ? (
+                  <p className="mt-2 basis-full text-xs text-destructive">
+                    {errors.durationInMinutes.message}
+                  </p>
+                ) : null}
               </div>
             ) : null}
+          </div>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label>
+                How do you want to offer your availability for this event type?
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Select one of your schedules or define custom hours specific to
+                this type of event.
+              </p>
+            </div>
+            <div className="inline-flex items-center space-x-2">
+              <Button
+                onClick={() => setIsCustomSchedule(false)}
+                type="button"
+                variant={"outline"}
+                size={"sm"}
+                className={`${!isCustomSchedule ? "border-primary" : ""}`}
+              >
+                Use an existing schedule
+              </Button>
+              <Button
+                onClick={() => setIsCustomSchedule(true)}
+                type="button"
+                variant={"outline"}
+                size={"sm"}
+                className={`${isCustomSchedule ? "border-primary" : ""}`}
+              >
+                Set custom hours
+              </Button>
+            </div>
+            {!isCustomSchedule ? (
+              <Select
+                onValueChange={(val: string) => {
+                  setValue("durationInMinutes", +val)
+                }}
+                defaultValue={initialData.durationInMinutes + ""}
+              >
+                <SelectTrigger id="eventDuration" className="w-[160px]">
+                  <SelectValue
+                    placeholder={watch("durationInMinutes") + " min"}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {[15, 30, 45, 60, "Custom"].map((duration) => (
+                    <SelectItem value={duration + ""}>
+                      {duration !== "Custom" ? duration + " min" : duration}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Time zone
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <ul className="flex flex-col">
+                    {initialData.availabilitySchedule.intervals.map(
+                      (interval, index) => (
+                        <li className="border-t px-6 py-4" key={interval.day}>
+                          <div className="flex items-center justify-between space-x-4 ">
+                            <div className="flex flex-col items-start space-y-4 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
+                              <div className="flex items-center space-x-4">
+                                <Checkbox
+                                  defaultChecked={interval.isActiveDay}
+                                  checked={watch(
+                                    `availabilitySchedule.intervals.${index}.isActiveDay`
+                                  )}
+                                  onCheckedChange={(val) => {
+                                    setValue(
+                                      `availabilitySchedule.intervals.${index}.isActiveDay`,
+                                      val as boolean
+                                    )
+                                  }}
+                                />
+                                <p className="min-w-[60px] font-semibold uppercase">
+                                  {interval.day.substring(0, 3)}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  {...register(
+                                    `availabilitySchedule.intervals.${index}.from`
+                                  )}
+                                  className="max-w-[100px]"
+                                  type="text"
+                                  defaultValue={interval.from}
+                                />
+                                <span>{" - "}</span>
+                                <Input
+                                  {...register(
+                                    `availabilitySchedule.intervals.${index}.to`
+                                  )}
+                                  className="max-w-[100px]"
+                                  type="text"
+                                  defaultValue={interval.to}
+                                />
+                              </div>
+                            </div>
+                            <Button
+                              onClick={() =>
+                                setValue(
+                                  `availabilitySchedule.intervals.${index}.isActiveDay`,
+                                  false
+                                )
+                              }
+                              variant={"ghost"}
+                              size={"sm"}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {errors?.availabilitySchedule?.intervals &&
+                          (errors.availabilitySchedule.intervals[index]?.from ||
+                            errors.availabilitySchedule.intervals[index]
+                              ?.to) ? (
+                            <p className="mt-2 basis-full text-xs text-destructive">
+                              {errors?.availabilitySchedule?.intervals[index]
+                                ?.from?.message ||
+                                errors?.availabilitySchedule?.intervals[index]
+                                  ?.to?.message}
+                            </p>
+                          ) : null}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
           <div className="border-t"></div>
           <div className="space-x-2">

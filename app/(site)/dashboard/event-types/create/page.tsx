@@ -1,18 +1,23 @@
 "use client"
 
-import { useState, type FC } from "react"
+import { useEffect, useState, type FC } from "react"
 import Link from "next/link"
+import {
+  AvailabilityFormSchemaType,
+  EventTypeFormSchemaType,
+} from "@/constants/zodSchemas"
 
 import { cn } from "@/lib/utils"
 import { Accordion, AccordionItem } from "@/components/ui/accordion"
 import { buttonVariants } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 
-import AvailabilityForm, { AvailabilityFormValues } from "../availability-form"
-import EventTypeForm, { EventTypeFormValues } from "../event-type-form"
+import AvailabilityForm from "../availability-form"
+import EventTypeForm from "../event-type-form"
 
 interface CreateEventData {
-  eventTypeValues: EventTypeFormValues
-  availabilityValues: AvailabilityFormValues
+  eventTypeValues: EventTypeFormSchemaType
+  availabilityValues: AvailabilityFormSchemaType
 }
 
 const CreateEventTypePage: FC = () => {
@@ -30,71 +35,83 @@ const CreateEventTypePage: FC = () => {
     availabilityValues: {
       durationInMinutes: 30,
       bookingRangeInDays: 60,
-      // excludeWeekends: true,
       availabilitySchedule: {
-        rules: [
+        intervals: [
           {
             day: "sunday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: true,
           },
           {
             day: "monday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: true,
           },
           {
             day: "tuesday",
-            intervals: { from: "09:00", to: "17:00" },
-            isActiveDay: true,
-          },
-          {
-            day: "tuesday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: true,
           },
           {
             day: "wednesday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: true,
           },
           {
             day: "thursday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: true,
           },
           {
             day: "friday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: false,
           },
           {
             day: "saturday",
-            intervals: { from: "09:00", to: "17:00" },
+            from: "09:00",
+            to: "17:00",
             isActiveDay: false,
           },
         ],
       },
     },
   })
+  const [isFirstStepValid, setIsFirstStepValid] = useState<boolean>(false)
 
-  function onEventTypeFormSubmit(formData: EventTypeFormValues) {
+  function onEventTypeFormSubmit(formData: EventTypeFormSchemaType) {
+    if (!isFirstStepValid) return
     setData((prevData) => ({
       ...prevData,
       eventTypeValues: { ...formData },
     }))
+    setOpenTab("availablity-form")
   }
 
-  function onAvailabilityFormSubmit(formData: AvailabilityFormValues) {
+  function onAvailabilityFormSubmit(formData: AvailabilityFormSchemaType) {
     setData((prevData) => ({
       ...prevData,
       availabilityValues: { ...formData },
     }))
   }
 
+  useEffect(() => {
+    toast({
+      variant: "default",
+      title: "Sending data:",
+      description: <p>{JSON.stringify(data)}</p>,
+    })
+  }, [data])
+
   return (
     <>
-      <div className="relative flex items-center justify-center border-b pb-6 ">
+      <div className="relative flex items-center justify-center">
         <Link
           href={"/dashboard/event-types"}
           className={cn(
@@ -113,7 +130,8 @@ const CreateEventTypePage: FC = () => {
       </div>
 
       <Accordion
-        defaultValue="event-type-form"
+        defaultValue={"event-type-form"}
+        value={openTab}
         type="single"
         collapsible
         className="w-full space-y-4"
@@ -126,9 +144,14 @@ const CreateEventTypePage: FC = () => {
             onSubmit={onEventTypeFormSubmit}
             initialData={data.eventTypeValues}
             isTabOpen={openTab === "event-type-form"}
+            setIsFirstStepValid={setIsFirstStepValid}
           />
         </AccordionItem>
-        <AccordionItem value="availablity-form" className="border-none">
+        <AccordionItem
+          disabled={!isFirstStepValid}
+          value="availablity-form"
+          className={`border-none ${!isFirstStepValid ? "opacity-50" : ""}`}
+        >
           <AvailabilityForm
             onSubmit={onAvailabilityFormSubmit}
             initialData={data.availabilityValues}

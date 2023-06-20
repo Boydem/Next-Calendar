@@ -1,20 +1,25 @@
 type EventColor = { id: string; className: string }
 
+export const ColorNames = [
+  "red",
+  "pink",
+  "magenta",
+  "indigo",
+  "blue",
+  "cyan",
+  "green",
+  "lime",
+  "yellow",
+  "orange",
+] as const
+
+export type Color = (typeof ColorNames)[number]
+
 export type EventColors = {
-  [color in
-    | "red"
-    | "pink"
-    | "magenta"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"]: EventColor
+  [name in Color]: EventColor
 }
 
-const eventColorsObj: EventColors = {
+const eventColorsMap: EventColors = {
   red: { id: "ec1", className: "red-400" },
   pink: { id: "ec2", className: "pink-400" },
   magenta: { id: "ec3", className: "purple-400" },
@@ -27,4 +32,4 @@ const eventColorsObj: EventColors = {
   orange: { id: "ec10", className: "orange-400" },
 }
 
-export default eventColorsObj
+export default eventColorsMap
