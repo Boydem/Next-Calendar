@@ -1,27 +1,96 @@
 "use client"
 
-import type { FC } from "react"
+import { useState, type FC } from "react"
 import Link from "next/link"
-import { useForm } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
+import { Accordion, AccordionItem } from "@/components/ui/accordion"
 import { buttonVariants } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 
-interface CreateEventTypePageProps {}
+import AvailabilityForm, { AvailabilityFormValues } from "../availability-form"
+import EventTypeForm, { EventTypeFormValues } from "../event-type-form"
 
-const CreateEventTypePage: FC<CreateEventTypePageProps> = () => {
-  const { register, handleSubmit } = useForm({
-    defaultValues: {
+interface CreateEventData {
+  eventTypeValues: EventTypeFormValues
+  availabilityValues: AvailabilityFormValues
+}
+
+const CreateEventTypePage: FC = () => {
+  const [openTab, setOpenTab] = useState<
+    "" | "availablity-form" | "event-type-form"
+  >("event-type-form")
+  const [data, setData] = useState<CreateEventData>({
+    eventTypeValues: {
       name: "",
       location: "",
       description: "",
-      url: "",
-      color: "",
+      slug: "",
+      color: "red",
+    },
+    availabilityValues: {
+      durationInMinutes: 30,
+      bookingRangeInDays: 60,
+      // excludeWeekends: true,
+      availabilitySchedule: {
+        rules: [
+          {
+            day: "sunday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "monday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "tuesday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "tuesday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "wednesday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "thursday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: true,
+          },
+          {
+            day: "friday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: false,
+          },
+          {
+            day: "saturday",
+            intervals: { from: "09:00", to: "17:00" },
+            isActiveDay: false,
+          },
+        ],
+      },
     },
   })
+
+  function onEventTypeFormSubmit(formData: EventTypeFormValues) {
+    setData((prevData) => ({
+      ...prevData,
+      eventTypeValues: { ...formData },
+    }))
+  }
+
+  function onAvailabilityFormSubmit(formData: AvailabilityFormValues) {
+    setData((prevData) => ({
+      ...prevData,
+      availabilityValues: { ...formData },
+    }))
+  }
 
   return (
     <>
@@ -42,54 +111,31 @@ const CreateEventTypePage: FC<CreateEventTypePageProps> = () => {
           Create New Event Type
         </h2>
       </div>
-      <div className="space-y-6">
-        <form className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-2 border-b pb-4">
-            <div className="h-5 w-5 rounded-full bg-cyan-600"></div>
-            <div className="flex flex-col">
-              <p className="text-sm">What event is this?</p>
-              <p className="text-xs text-muted-foreground">
-                Coffee, In-person meeting
-              </p>
-            </div>
-          </div>
-          <div className="max-w-[400px] space-y-2">
-            <Label htmlFor="eventName">Event name *</Label>
-            <Input
-              {...register("name", { required: true })}
-              type="text"
-              id="eventName"
-            />
-          </div>
-          <div className="max-w-[400px] space-y-2">
-            <Label htmlFor="eventLocation">Location</Label>
-            <Input
-              {...register("location")}
-              type="text"
-              id="eventLocation"
-              placeholder="Add a location"
-            />
-          </div>
-          <div className="max-w-[400px] space-y-2">
-            <Label htmlFor="eventDescription">Description/Instructions</Label>
-            <Textarea
-              {...register("description")}
-              id="eventDescription"
-              placeholder="Write a summary and any details your invitee should know about the event."
-            />
-          </div>
-          <div className="max-w-[400px] space-y-2">
-            <Label htmlFor="eventLink">Event link *</Label>
-            <Input
-              {...register("url", { required: true })}
-              type="text"
-              id="eventLink"
-              placeholder="Add a location"
-            />
-          </div>
-          <div className="border-t"></div>
-        </form>
-      </div>
+
+      <Accordion
+        defaultValue="event-type-form"
+        type="single"
+        collapsible
+        className="w-full space-y-4"
+        onValueChange={(val: "" | "availablity-form" | "event-type-form") =>
+          setOpenTab(val)
+        }
+      >
+        <AccordionItem value="event-type-form" className="border-none">
+          <EventTypeForm
+            onSubmit={onEventTypeFormSubmit}
+            initialData={data.eventTypeValues}
+            isTabOpen={openTab === "event-type-form"}
+          />
+        </AccordionItem>
+        <AccordionItem value="availablity-form" className="border-none">
+          <AvailabilityForm
+            onSubmit={onAvailabilityFormSubmit}
+            initialData={data.availabilityValues}
+            isTabOpen={openTab === "availablity-form"}
+          />
+        </AccordionItem>
+      </Accordion>
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { loginUserSchema } from "@/constants/schemas"
+import { loginUserSchema } from "@/constants/zodSchemas"
 import prisma from "@/prisma/prisma.client"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import bcrypt from "bcryptjs"

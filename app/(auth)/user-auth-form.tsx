@@ -2,7 +2,10 @@
 
 import { HTMLAttributes, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { registerUserSchema, registerUserSchemaType } from "@/constants/schemas"
+import {
+  registerUserSchema,
+  registerUserSchemaType,
+} from "@/constants/zodSchemas"
 import { userService } from "@/services/user.service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn, useSession } from "next-auth/react"

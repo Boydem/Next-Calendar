@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { registerUserSchema } from "@/constants/schemas"
+import { registerUserSchema } from "@/constants/zodSchemas"
 import prisma from "@/prisma/prisma.client"
 import bcrypt from "bcryptjs"
 

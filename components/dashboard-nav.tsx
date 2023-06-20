@@ -10,7 +10,6 @@ export function DashboardNav({
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname()
-  console.log("pathname:", pathname)
 
   return (
     <nav

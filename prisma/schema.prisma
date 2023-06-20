@@ -12,46 +12,71 @@ datasource db {
 
 model User {
   id             String      @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String?     @unique
+  name           String
+  email          String      @unique
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
-  userUrl        String?     @unique
+  userUrl        String      @unique
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   eventTypes     EventType[]
   accounts       Account[]
   sessions       Session[]
   events         Event[]
+  schedules      Schedule[]
 
   @@map("users")
 }
 
 model EventType {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userUrl           String  @db.ObjectId
-  type              String?
-  name              String
-  durationInMinutes Int
-  description       String?
-  url               String
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  ownerUrl           String
+  name               String
+  description        String?
+  color              String
+  slug               String
+  location           String?
+  durationInMinutes  Int
+  bookingRangeInDays Int
+  scheduleId         String   @db.ObjectId
+  schedule           Schedule @relation(fields: [scheduleId], references: [id])
 
   events Event[]
-  user   User    @relation(fields: [userUrl], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [ownerUrl], references: [userUrl], onDelete: Cascade)
 
   @@map("event-types")
 }
 
+model Schedule {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String      @db.ObjectId
+  intervals  Interval[]
+  eventTypes EventType[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Interval {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  scheduleId  String  @db.ObjectId
+  from        String
+  to          String
+  day         String
+  isDayActive Boolean
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+}
+
 model Event {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  eventTypeId   String    @db.ObjectId
-  userId        String    @db.ObjectId
-  name          String?
-  email         String?
-  startDateTime DateTime?
-  endDateTime   DateTime?
-  status        String?
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventTypeId String   @db.ObjectId
+  userId      String   @db.ObjectId
+  name        String
+  email       String
+  startDate   DateTime
+  endDate     DateTime
+  status      String
 
   user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   events EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
